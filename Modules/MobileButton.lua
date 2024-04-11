@@ -47,7 +47,7 @@ end
 
 function MobileButton.ToggleUserSetPositionMode(enabled, buttons)
 	for _, btn in pairs(buttons) do
-		btn:SetEnabled(enabled)
+		btn:SetEnabled(not enabled)
 		btn:SetDraggable(enabled)
 	end
 	if enabled then
@@ -197,6 +197,7 @@ function MobileButton.new()
 	self.enabled = true
 	self.size = DefaultButtonSize
 	self.position = DefaultButtonPosition
+	self.visible = true
 	self.bindedFunction = nil
 	self.draggable = false
 
@@ -302,6 +303,11 @@ function MobileButton:SetPosition(position)
 	end
 end
 
+function MobileButton:SetVisible(visible)
+	self.visible = visible
+	self.instances.Button.Visible = visible
+end
+
 function MobileButton:ResetPosition(position)
 	if positionSaves[self.actionName] then
 		positionSaves[self.actionName] = nil
@@ -331,6 +337,7 @@ function MobileButton:UpdateData()
 	self.name = self.instances.Button.Name
 	self.size = self.instances.Button.Size
 	self.position = self.instances.Button.Position
+	self.visible = self.instances.Button.Visible
 	self.imageId = self.instances.Button.Image
 	self.iconId = self.instances.Icon.Image
 	self.title = self.instances.Title.Text
