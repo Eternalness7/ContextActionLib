@@ -4,7 +4,6 @@
 	-Written by @Eternalness7
 	-V0.1
 ]]
-
 local ContextActionLib = {}
 
 local ContextActionService = game:GetService("ContextActionService")
@@ -42,8 +41,11 @@ ContextActionLib.LocalToolEquipped = ContextActionService.LocalToolEquipped
 ContextActionLib.LocalToolUnequipped = ContextActionService.LocalToolUnequipped
 
 function ContextActionLib.BindAction(actionName:string, functionToBind: (actionName:string, inputState:Enum.UserInputState, inputObject:InputObject) -> (), createTouchButton:boolean, inputTypes:Enum.KeyCode|{Enum.KeyCode}, Caller:Script)
-	if typeof(inputTypes) == "table" then inputTypes = unpack(inputTypes) end
-	ContextActionService:BindAction(actionName, functionToBind, false, inputTypes)
+	if typeof(inputTypes) == "table" then 	
+		ContextActionService:BindAction(actionName, functionToBind, false, unpack(inputTypes))
+	elseif typeof(inputTypes) == "EnumItem" then
+		ContextActionService:BindAction(actionName, functionToBind, false, inputTypes)
+	end
 	if Caller then
 		Caller.Destroying:Connect(function()
 			ContextActionLib.UnbindAction(actionName)
@@ -57,8 +59,11 @@ function ContextActionLib.BindAction(actionName:string, functionToBind: (actionN
 end
 
 function ContextActionLib.BindActionAtPriority(actionName:string, functionToBind: (actionName:string, inputState:Enum.UserInputState, inputObject:InputObject) -> (), createTouchButton:boolean, priorityLevel:number, inputTypes:Enum.KeyCode|{Enum.KeyCode}, Caller:Script)
-	if typeof(inputTypes) == "table" then inputTypes = unpack(inputTypes) end
-	ContextActionService:BindActionAtPriority(actionName, functionToBind, false, priorityLevel, inputTypes)
+	if typeof(inputTypes) == "table" then
+		ContextActionService:BindActionAtPriority(actionName, functionToBind, false, priorityLevel, unpack(inputTypes))
+	elseif typeof(inputTypes) == "EnumItem" then
+		ContextActionService:BindActionAtPriority(actionName, functionToBind, false, priorityLevel, inputTypes)
+	end
 	if Caller then
 		Caller.Destroying:Connect(function()
 			ContextActionLib.UnbindAction(actionName)
