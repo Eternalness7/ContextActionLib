@@ -2,7 +2,7 @@
 	-Functions as a replacement for ContextActionService, 
 	-with the main feature being increased mobile button customization
 	-Written by @Eternalness7
-	-V0.1
+	-V0.2
 ]]
 local ContextActionLib = {}
 
@@ -76,6 +76,33 @@ function ContextActionLib.BindActionAtPriority(actionName:string, functionToBind
 	end
 end
 
+local ActionsAtNoPriority = {} --[actionName] = connection
+function ContextActionLib.BindActionAtNoPriority(actionName:string, functionToBind: (actionName:string, inputState:Enum.UserInputState, inputObject:InputObject) -> (), createTouchButton:boolean, inputTypes:Enum.KeyCode|{Enum.KeyCode}, Caller:Script)
+	if typeof(inputTypes) == "table" then
+		ActionsAtNoPriority[actionName] = UserInputService.InputBegan:Connect(function(inputObject:InputObject, gameProcessedEvent:boolean)
+			if table.find(inputTypes, inputObject.KeyCode) ~= nil then
+				functionToBind(actionName, inputObject.UserInputState, inputObject)
+			end
+		end)
+	elseif typeof(inputTypes) == "EnumItem" then
+		ActionsAtNoPriority[actionName] = UserInputService.InputBegan:Connect(function(inputObject:InputObject, gameProcessedEvent:boolean)
+			if inputObject.KeyCode == inputTypes then
+				functionToBind(actionName, inputObject.UserInputState, inputObject)
+			end
+		end)
+	end
+	if Caller then
+		Caller.Destroying:Connect(function()
+			ContextActionLib.UnbindAction(actionName, true)
+		end)
+	end
+	if createTouchButton and isMobile then
+		local Button = MobileButton.new()
+		Button:SetActionName(actionName)
+		Button:SetFunctionToBind(functionToBind)
+	end
+end
+
 function ContextActionLib.GetAllBoundActionInfo()
 	return ContextActionService:GetAllBoundActionInfo()
 end
@@ -116,20 +143,30 @@ function ContextActionLib.SetTitle(actionName:string, title:string)
 	end
 end
 
-function ContextActionLib.UnbindAction(actionName:string)
-	ContextActionService:UnbindAction(actionName)
+function ContextActionLib.UnbindAction(actionName:string, IsNotCAS:boolean)
+	if IsNotCAS then
+		ActionsAtNoPriority[actionName]:Disconnect()
+		ActionsAtNoPriority[actionName] = nil
+	else
+		ContextActionService:UnbindAction(actionName)
+	end
 	local button = MobileButtonData.GetButton(actionName)
 	if isMobile and button then
 		button:Remove()
 	end
 end
 
+function isEmptyTable(dict: {})
+	for _, _ in pairs(dict) do
+		return false
+	end
+	return true
+end
+
 function ContextActionLib.UnbindAllActions()
 	ContextActionService:UnbindAllActions()
-	if MobileButtonData.GetAllButtons() ~= {} then
-		for name, btn in pairs(MobileButtonData.GetAllButtons()) do
-			btn:Remove()
-		end
+	for name, btn in pairs(MobileButtonData.GetAllButtons()) do
+		btn:Remove()
 	end
 end
 
